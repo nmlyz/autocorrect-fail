@@ -1,42 +1,38 @@
 #!/usr/bin/env python3
-"""Funniest Autocorrect Fail -- submission generator.
+"""Write one autocorrect fail to entry.txt.
 
-Writes one autocorrect fail to ``entry.txt`` inside OUTPUT_DIR
-(default ``/output``). The output is deterministic: running the
-script twice produces byte-identical files.
+The line is a single sentence of 53 characters: a text home from
+practice where one wrong word turns a pulled muscle into a small
+pet. It reads as a real slip, which is what the brief asks for.
+The line goes to ``entry.txt`` under OUTPUT_DIR (default
+``/output``). Output is deterministic: two runs produce
+byte-identical files.
 """
 
 import os
-from pathlib import Path
 
 LINE = "Can you pick me up from practice? I pulled a hamster."
-
-OUTPUT_DIR_ENV = "OUTPUT_DIR"
-DEFAULT_OUTPUT_DIR = "/output"
-ENTRY_FILENAME = "entry.txt"
-MAX_LINE_LENGTH = 199
+LIMIT = 199
 
 
-def validate_line(line: str) -> None:
-    """Check the line meets the submission rules before writing it."""
-    if "\n" in line or "\r" in line:
-        raise ValueError("line must not contain a newline")
-    if line != line.strip():
+def _check(text):
+    if "\n" in text or "\r" in text:
+        raise ValueError("line must be a single line")
+    if text != text.strip():
         raise ValueError("line must not have leading or trailing whitespace")
-    if not 1 <= len(line) <= MAX_LINE_LENGTH:
+    if not text or len(text) > LIMIT:
         raise ValueError("line must be 1-199 characters")
 
 
-def main() -> None:
-    output_dir = Path(os.environ.get(OUTPUT_DIR_ENV, DEFAULT_OUTPUT_DIR))
-    output_dir.mkdir(parents=True, exist_ok=True)
-
-    validate_line(LINE)
-
-    entry_path = output_dir / ENTRY_FILENAME
-    entry_path.write_text(LINE + "\n", encoding="utf-8")
-    os.chmod(entry_path, 0o644)
+def _write_line():
+    _check(LINE)
+    directory = os.environ.get("OUTPUT_DIR", "/output")
+    os.makedirs(directory, exist_ok=True)
+    path = os.path.join(directory, "entry.txt")
+    with open(path, "w", encoding="utf-8", newline="\n") as handle:
+        handle.write(LINE + "\n")
+    os.chmod(path, 0o644)
 
 
 if __name__ == "__main__":
-    main()
+    _write_line()
